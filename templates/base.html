@@ -1,0 +1,47 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Let's Get Coffee - {% block title %}{% endblock %}</title>
+    {% include 'head_css.html' %}
+
+    <style>
+    {% block style %}
+    {% endblock %}
+    </style>
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=AIzaSyCGNKqFKcscw63Zt5VKyNpdVEpJQbyzxHE" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+
+    {# {% include "navbar.html" %} #}
+
+    {% block header %}
+    {% endblock header %}
+
+
+    {% block content %}
+    {% endblock content %}
+    
+
+
+    {% include 'javascript.html' %}
+
+    {% block script %}
+        
+    {% endblock script %}
+
+</body>
+
+</html>

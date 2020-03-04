@@ -1,0 +1,598 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <title>AirU</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="{% static 'js/script.js' %}"></script>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+  div#filter{
+    width:20%;
+    position:absolute;
+    right:0px;
+    top:0px;
+    background: rgba(0,0,0,0.5);
+    height:100%;
+  }
+
+  div#pop-up {
+    display: none;
+    position:absolute;
+    color: white;
+    font-size: 17px;
+    background: rgba(0,0,0,0.5);
+    padding: 5px 10px 5px 10px;
+    -moz-border-radius: 8px 8px;
+    border-radius: 8px 8px;
+    margin-top:100px;
+    width: 60%;
+  }
+  div#pop-up-title {
+    font-size: 15px;
+    width:200px;
+    margin-bottom: 4px;
+    font-weight: bolder;
+  }
+  div#pop-up-content {
+    font-size: 13px;
+  }
+  div#pop-desc {
+    width: 100px;
+  }
+  div#pop-img {
+    font-size: 13px;
+    font-weight: bolder;
+  }
+
+
+
+  #map {
+  width: 100%; 
+  min-height: 100%; 
+  background: #3e3e3e; 
+  position:relative
+}
+
+
+.controls {
+  margin-top: 10px;
+  border: 1px solid transparent;
+  border-radius: 2px 0 0 2px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  height: 32px;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#pac-input {
+  background-color: #fff;
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 300;
+  margin-left: 12px;
+  padding: 0 11px 0 13px;
+  text-overflow: ellipsis;
+  width: 300px;
+}
+
+#pac-input:focus {
+  border-color: #4d90fe;
+}
+
+.pac-container {
+  font-family: Roboto;
+}
+
+#type-selector {
+  color: #fff;
+  background-color: #4d90fe;
+  padding: 5px 11px 0px 11px;
+}
+
+#type-selector label {
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 300;
+
+}
+
+    </style>
+  </head>
+  <body>
+
+
+    <input id="pac-input" class="controls" type="text"
+        placeholder="Enter a location">
+    <div id="type-selector" class="controls">
+      <input type="radio" name="type" id="changetype-all" checked="checked">
+      <label for="changetype-all">All</label>
+
+      <input type="radio" name="type" id="changetype-establishment">
+      <label for="changetype-establishment">Establishments</label>
+
+      <input type="radio" name="type" id="changetype-address">
+      <label for="changetype-address">Addresses</label>
+
+      <input type="radio" name="type" id="changetype-geocode">
+      <label for="changetype-geocode">Geocodes</label>
+    </div>
+    <div id="map"></div>
+      <div id="pop-up">
+            <div id="pop-up-title"></div>
+            <div id="pop-up-content">
+                <table> <tr>
+                    <td><div id="pop-img"></div></td>
+                    <td><div id="pop-desc"></div></td>
+                </tr> </table>
+            </div>
+        </div>
+  </div>
+  <!--
+  <div id="filter">
+  <table style="width:100%">
+  <tr>
+    <td>
+      <select>
+      <option vlaue="Entire">Entire Home/Apartment</option>
+      <option vlaue="Private">Private Room</option>
+      <option vlaue="Share">Shared Room</option>
+      </select>
+    </td>
+
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="TV" value="1">TV</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="Kitchen" value="1">Kitchen</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="AC" value="1">Air Conditioning</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="WIFI" value="1">Wireless Internet</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="Heating" value="1">Heating</td>
+  </tr>
+  <tr>
+    <td>
+    <label for="price">Price</label>
+    <input type="range" min="0" max="1000" value="300" id="price" step="1" oninput="outputUpdate_price(value)">
+    <output for="price" id="price_vol">300</output>
+    </td>
+  </tr>
+  <tr>
+    <td>
+    <label for="time">Time</label>
+    <input type="range" min="0" max="30" value="10" id="time" step="1" oninput="outputUpdate_time(value)">
+    <output for="time" id="time_vol">10</output>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <button onclick="myFunction()">I like it!</button>
+    </td>
+  </tr>
+</table>
+  </div>
+-->
+<div id='cssmenu'>
+<ul>
+   <!--<li class='active'><a href='#'><span>Home</span></a>
+   </li>-->
+   <li class='has-sub'><a href='#'><span>Room Type</span></a>
+      <ul>
+         <li><a href='#'><input type="radio" name="Room" id="Entire" value="1" checked>Entire Home/Aparment</a></li>
+         <li><a href='#'><input type="radio" name="Room" id="Share" value="1" >Shared Room</a></li>
+         <li class='last'><a href='#'><input type="radio" name="Room" id="Private" value="1">Private Room</a></li>
+      </ul>
+   </li>
+   <li class='has-sub'><a href='#'><span>Features</span></a>
+      <ul>
+         <li><a href='#'><input type="checkbox" id="TV" value="1">TV</a></li>
+         <li><a href='#'><input type="checkbox" id="AC" value="1">Air Conditioning</a></li>
+         <li><a href='#'><input type="checkbox" id="WIFI" value="1">Wireless Internet</a></li>
+         <li><a href='#'><input type="checkbox" id="Heating" value="1">Heating</a></li>
+         <li class='last'><a href='#'><input type="checkbox" id="Kitchen" value="1">Kitchen</a></li>
+      </ul>
+   <li class='has-sub'><a href='#'><span>Time and Price</span></a>
+      <ul>        
+         <li><a href='#'><label for="price">Price</label>
+    <input type="range" min="0" max="1000" value="500" id="price" step="1" oninput="outputUpdate_price(value)">
+    <output for="price" id="price_vol">300</output></a></li>
+         <li class='last'><a href='#'><label for="time">Time</label>
+    <input type="range" min="0" max="30" value="15" id="time" step="1" oninput="outputUpdate_time(value)">
+    <output for="time" id="time_vol">10</output></a></li>
+      </ul>
+   </li>
+   <li class='last' id='likeit'><a href='#'><span onclick="likeit()">Like It</span></a>
+   </li>
+   <li class='has-sub'><a href='#'><span>Recommander</span></a>
+      <ul>
+         <li><a href='#' id="likeitplaceholder"><span>Company</span></a></li>
+         <li class='last'><a href='#'><span>Contact</span></a></li>
+         <li><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js1.js"></script></span></a></li>
+          <li class='last'><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js5.js"></script></span></a></li>
+
+
+
+
+      </ul>
+   </li>
+   
+</ul>
+</div>
+
+    <script>
+function testtest(e) {
+    // read the value from the slider:
+    var value = document.getElementById("price").value;
+    // now compare:
+    alert("First");
+}
+
+
+// ------------------------------------
+    var map = '';
+    var ubers=[{'duration': 0,
+ 'id': 9062929,
+ 'latitude': 40.80684473842182,
+ 'longitude': -73.96307061354132,
+ 'name': 'Studio next to Columbia University',
+ 'price': 150,
+ 'summary': 'Lovely studio with a pull-out futon and queen size bed. It is perfect for 2 people but in case you are group of 3 or 4  futon can be set up as a bed.',
+ 'uber': 14},
+{'duration': 720,
+ 'id': 9172361,
+ 'latitude': 40.7712163877805,
+ 'longitude': -73.9572589507285,
+ 'name': '1 BR Upper East Side Apartment',
+ 'price': 150,
+ 'summary': "I'm renting my apartment while out of town. It's a comfortable space close to the 4/5/6 subway lines, Central Park, the Met and many wonderful restaurants. I've lived in this building for almost 20 years and it's the quietest apartment in Manhattan!",
+ 'uber': 42},
+{'duration': 2340,
+ 'id': 5615949,
+ 'latitude': 40.695936724047996,
+ 'longitude': -73.97241455265912,
+ 'name': 'Cozy Contemporary 1BD, Fort Greene',
+ 'price': 145,
+ 'summary': 'Please enjoy the use of my full apartment.   While I am away traveling apartment has central AC/heat is great for couples or a single person traveling to New York or working short term in the Navy Yards or Sterling Studios.',
+ 'uber': 68},
+{'duration': 2640,
+ 'id': 3064153,
+ 'latitude': 40.68421754330589,
+ 'longitude': -73.97540256813599,
+ 'name': 'Light Filled Apt. Near Every Subway',
+ 'price': 160,
+ 'summary': 'This light filled 2 room studio is comfortable and convenient. Located in Ft. Greene this apt is a couple of blocks away from the Barclays Center and steps from the A/C/G/B/D/N/Q/R/2/3/4/5 subways and LIRR-Airtrain. Manhattan is only 10 min. away.',
+ 'uber': 62},
+{'duration': 600,
+ 'id': 9883870,
+ 'latitude': 40.78305746431905,
+ 'longitude': -73.94580528992147,
+ 'name': 'Room in Apt Near Central Park UES',
+ 'price': 115,
+ 'summary': 'This is for a room in a 2 bedroom apartment.  The other room will be occupied.  The apartment offers many amenities such as High Speed Internet, Washer/Dryer, and a full kitchen.  Less than a 10 minute walk to the Subway, easy access to Central Park.',
+ 'uber': 34}];
+
+function likeit() {
+  $('#likeitplaceholder').append('<li><a href="#"><span>Studio next to Columbia University</span></a></li>');
+  $('#likeitplaceholder').append('<li><a href="#"><span>1 BR Upper East Side Apartment</span></a></li>');
+  $('#likeitplaceholder').append('<li><a href="#"><span>Light Filled Apt. Near Every Subway</span></a></li>');
+  $('#likeitplaceholder').append('<li><a href="#"><span>Room in Apt Near Central Park UES</span></a></li>');
+  $('#likeitplaceholder').append('<li><a href="#"><span>Cozy Contemporary 1BD, Fort Greene</span></a></li>');
+  console.log("clicked");
+  //
+    map.setZoom(12);
+    var uber_info = new google.maps.InfoWindow(), uber_marker, i;
+    
+    // Loop through our array of markers & place each one on the map  
+    for( i = 0; i < ubers.length; i++ ) {
+        var price_info = new google.maps.InfoWindow();
+        var position = new google.maps.LatLng(ubers[i].latitude, ubers[i].longitude);
+        //bounds.extend(position);
+        uber_marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: ubers[i].name
+        });
+        
+        // Allow each marker to have an info window    
+        google.maps.event.addListener(uber_marker, 'click', (function(uber_marker, i) {
+            return function() {
+                //hotel_info.setContent(infoWindowContent[i][0]);
+                //hotel_info.open(map, hotel_marker);
+            $("#pop-up").fadeOut(100,function () {
+            // Popup content
+            $("#pop-up-title").html(ubers[i].name);
+            $("#pop-img").html(ubers[i].summary);
+            //console.log(hotel_markers[i][0]);
+            //$("#pop-desc").html("K");
+
+            // Popup position
+            // var popLeft = (d.x*scale)+trans[0]+20;//lE.cL[0] + 20;
+            // var popTop = (d.y*scale)+trans[1]+20;//lE.cL[1] + 70;
+            $("#pop-up").css({"left":20,"bottom":20});
+            $("#pop-up").fadeIn(100);
+            })
+          }
+        })(uber_marker, i));
+
+        // Automatically center the map fitting all markers on the screen
+        //map.fitBounds(bounds);
+        price_info.setContent('Uber: $' + ubers[i].uber + '</br>Housing: $' + ubers[i].price + '');
+        price_info.open(map, uber_marker);
+    }
+
+
+
+
+}
+
+function getobj1(){
+     "Monthly Price: "+obj[0].monthly_price + "/n Uber: "+obj[0].uber+"/n Name: "+obj[0].name+"/n Price: "+obj[0].price+"/n Longitude: "+obj[0].longitude+"/n Summary: "+obj[0].summary+"/n Latitude: "+obj[0].latitude+"/n weekly_price: "+obj[0].weekly_price +"/n ID: "+obj[0].id;
+ }
+ function getobj2(){
+   "Monthly Price: "+obj[1].monthly_price + "/n Uber: "+obj[1].uber+"/n Name: "+obj[1].name+"/n Price: "+obj[1].price+"/n Longitude: "+obj[1].longitude+"/n Summary: "+obj[1].summary+"/n Latitude: "+obj[1].latitude+"/n weekly_price: "+obj[1].weekly_price +"/n ID: "+obj[1].id;
+ }
+ function getobj3(){
+   "Monthly Price: "+obj[2].monthly_price + "/n Uber: "+obj[2].uber+"/n Name: "+obj[2].name+"/n Price: "+obj[2].price+"/n Longitude: "+obj[2].longitude+"/n Summary: "+obj[2].summary+"/n Latitude: "+obj[2].latitude+"/n weekly_price: "+obj[2].weekly_price +"/n ID: "+obj[2].id;
+ }
+ function getobj4(){
+   "Monthly Price: "+obj[3].monthly_price + "/n Uber: "+obj[3].uber+"/n Name: "+obj[3].name+"/n Price: "+obj[3].price+"/n Longitude: "+obj[3].longitude+"/n Summary: "+obj[3].summary+"/n Latitude: "+obj[3].latitude+"/n weekly_price: "+obj[3].weekly_price +"/n ID: "+obj[3].id;
+ }
+ function getobj5(){
+   "Monthly Price: "+obj[4].monthly_price + "/n Uber: "+obj[4].uber+"/n Name: "+obj[4].name+"/n Price: "+obj[4].price+"/n Longitude: "+obj[4].longitude+"/n Summary: "+obj[4].summary+"/n Latitude: "+obj[4].latitude+"/n weekly_price: "+obj[4].weekly_price +"/n ID: "+obj[4].id;
+ }
+
+function outputUpdate_time(vol) {
+  document.querySelector('#time_vol').value = vol;
+    var value = document.getElementById("time").value;
+    map.setZoom(19-0.2*value)
+}
+function outputUpdate_price(vol) {
+  document.querySelector('#price_vol').value = vol;
+      var value = document.getElementById("price").value;
+    // now compare:
+    console.log(value);
+}
+// This example requires the Places library. Include the libraries=places
+// parameter when you first load the API. For example:
+// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: -33.8688, lng: 151.2195},
+    zoom: 13
+  });
+  var input = /** @type {!HTMLInputElement} */(
+      document.getElementById('pac-input'));
+
+  var types = document.getElementById('type-selector');
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(types);
+
+  var autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo('bounds', map);
+
+  var infowindow = new google.maps.InfoWindow();
+  var marker = new google.maps.Marker({
+    map: map,
+    anchorPoint: new google.maps.Point(0, -29)
+  });
+
+  autocomplete.addListener('place_changed', function() {
+    infowindow.close();
+    marker.setVisible(false);
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      window.alert("Autocomplete's returned place contains no geometry");
+      return;
+    }
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+      lat=place.geometry.location.lat();
+      lon=place.geometry.location.lng();
+    } else {
+      map.setCenter(place.geometry.location);
+      lat=place.geometry.location.lat();
+      lon=place.geometry.location.lng();
+      console.log(place.geometry.location.lat());
+      console.log(place.geometry.location.lng());
+      map.setZoom(17);  // Why 17? Because it looks good.
+    }
+    var loca = {
+     "roomtype": $("input[name=Room]").val(),
+     "tv": document.getElementById("TV").checked,
+     "ac": document.getElementById("AC").checked,
+     "wifi": document.getElementById("WIFI").checked,
+     "kitchen": document.getElementById("Kitchen").checked,
+     "heating": document.getElementById("Heating").checked,
+     "price_max": document.getElementById("price").value,
+     "time_max": document.getElementById("time").value,
+     "lat": lat,
+     "lon": lon
+     };
+    marker.setIcon(/** @type {google.maps.Icon} */({
+      url: place.icon,
+      size: new google.maps.Size(71, 71),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(17, 34),
+      scaledSize: new google.maps.Size(35, 35)
+    }));
+    marker.setPosition(place.geometry.location);
+    marker.setVisible(true);
+
+    var address = '';
+    if (place.address_components) {
+      address = [
+        (place.address_components[0] && place.address_components[0].short_name || ''),
+        (place.address_components[1] && place.address_components[1].short_name || ''),
+        (place.address_components[2] && place.address_components[2].short_name || '')
+      ].join(' ');
+    }
+
+    infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+    infowindow.open(map, marker);
+
+      // Add Markers
+    var hotels=[{'id': 746346,
+ 'latitude': 40.71714154100949,
+ 'longitude': -73.9913891810324,
+ 'name': 'The Lower East Side Studio Flat',
+ 'price': '199',
+ 'summary': 'Unknow'},
+{'id': 10731545,
+ 'latitude': 40.72072473499427,
+ 'longitude': -73.98962721188163,
+ 'name': 'Cute and comfy 2 bedroom apt',
+ 'price': '140',
+ 'summary': 'PRODUCTION FILMING ACCEPTED! Our 2 bedroom one bath is perfect for up to 5 people. One extra large bedroom with king bed and queen bed in the other. Spacious kitchen for lower east side. 5-10min walk to Soho, little Italy, China town. Subway 1 block away.'},
+{'id': 2477717,
+ 'latitude': 40.71729637876483,
+ 'longitude': -73.9894866652345,
+ 'name': 'bright lower east side loft',
+ 'price': '200',
+ 'summary': 'large loft like apartment in the lower east side with 14 windows/3 exposures. in middle of LES/Chinatown gallery and restaurant district. minutes from nolita, soho, tribeca. close to trains. 60" tv. huge dining table. cool apt with real nyc character'},
+{'id': 7306605,
+ 'latitude': 40.71927597509657,
+ 'longitude': -73.99046214766359,
+ 'name': 'Large Lower East Side 1 Bedroom Apt',
+ 'price': '150',
+ 'summary': 'Very spacious true 1 BR apartment with hardwood floors and high ceilings overlooking Orchard St. Area is fantastic - 10 minute walk to the heart of Soho (Broadway shopping district), 5 mins walk to the hip Bowery / Nolita area (amazing restaurants).'},
+{'id': 19169,
+ 'latitude': 40.71851207376542,
+ 'longitude': -73.98892346023239,
+ 'name': 'Entire 2 Bedroom - Large & Sunny',
+ 'price': '265',
+ 'summary': 'Entire bright and sunny 2 bedroom apt in super charming neighborhood in downtown Manhattan.'},
+{'id': 2102492,
+ 'latitude': 40.71771352893602,
+ 'longitude': -73.99043554230427,
+ 'name': 'Cozy 2BD Downtown Manhattan',
+ 'price': '119',
+ 'summary': 'Call it craftsman-modern, this cozy 2 bedroom is centrally located downtown and will accommodate  a couple, or 2 friends traveling together.  Both bedrooms are dual function: One, a den-bedroom; the other, an office-bedroom.  Absolutely quiet.'},
+{'id': 8397623,
+ 'latitude': 40.72063655354585,
+ 'longitude': -73.98820218385282,
+ 'name': 'Comfy-Large Manhattan 3bdr-Loft/Apt',
+ 'price': '449',
+ 'summary': '1,500SF (150 m2)  loft/apartment, recently renovated. Full floor, bright apt,  windows facing east-west. Great live/work space. 3Bedrooms/3Beds. Big plush sofa to sleep on. 2extra beds available on request. ServiceElevator used only for check-in/out.'},
+{'id': 7227152,
+ 'latitude': 40.71978212817796,
+ 'longitude': -73.98762246040151,
+ 'name': 'Penthouse w/ Private Rooftop in LES',
+ 'price': '350',
+ 'summary': 'Enjoy a beautiful two-floor penthouse with 400 sq ft private rooftop in the heart of LES.  Perfect for travelers looking to experience the best Manhattan has to offer, close to great restaurants, bars and SoHo. Steps from the subways and buses.'},
+{'id': 9314449,
+ 'latitude': 40.720197091692775,
+ 'longitude': -73.9892083130048,
+ 'name': 'Lovely 1 Br Heart of LES',
+ 'price': '179',
+ 'summary': "Located in the heart of Manhattan's Lower East Side, this apartment includes wifi, on demand channels, a comfortable queen-sized bed, etc. Located just a few blocks from the Williamsburg Bridge, 1 block from the the F, M, J, Z subway & close to the 6 - getting around is easy."},
+{'id': 4456869,
+ 'latitude': 40.7203155490589,
+ 'longitude': -73.98786659362933,
+ 'name': 'Cozy 1BD For Your Stay In NYC',
+ 'price': '187',
+ 'summary': "My cozy one bedroom apartment is perfect for your holiday stay in New York City's trendy Lower East Side. It comfortably sleeps three people. Enjoy access to major subway lines, great restaurants and even better shopping!"}];
+    // var hotel_markers = [
+    //     ['London Eye, London', 51.503454,-0.119562],
+    //     ['Palace of Westminster, London', 51.499633,-0.124755]
+    // ];
+                        
+    // Info Window Content
+    // var infoWindowContent = [
+    //     ['<div class="info_content">' +
+    //     '<h3>London Eye</h3>' +
+    //     '<p>The London Eye is a giant Ferris wheel situated on the banks of the River Thames. The entire structure is 135 metres (443 ft) tall and the wheel has a diameter of 120 metres (394 ft).</p>' +        '</div>'],
+    //     ['<div class="info_content">' +
+    //     '<h3>Palace of Westminster</h3>' +
+    //     '<p>The Palace of Westminster is the meeting place of the House of Commons and the House of Lords, the two houses of the Parliament of the United Kingdom. Commonly known as the Houses of Parliament after its tenants.</p>' +
+    //     '</div>']
+    // ];
+    // Price data
+    //var price = ['1','2']
+
+    // Display multiple markers on a map
+    var hotel_info = new google.maps.InfoWindow(), hotel_marker, i;
+    
+    // Loop through our array of markers & place each one on the map  
+    for( i = 0; i < hotels.length; i++ ) {
+        var price_info = new google.maps.InfoWindow();
+        var position = new google.maps.LatLng(hotels[i].latitude, hotels[i].longitude);
+        //bounds.extend(position);
+        hotel_marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: hotels[i].name
+        });
+        
+        // Allow each marker to have an info window    
+        google.maps.event.addListener(hotel_marker, 'click', (function(hotel_marker, i) {
+            return function() {
+                //hotel_info.setContent(infoWindowContent[i][0]);
+                //hotel_info.open(map, hotel_marker);
+            $("#pop-up").fadeOut(100,function () {
+            // Popup content
+            $("#pop-up-title").html(hotels[i].name);
+            $("#pop-img").html(hotels[i].summary);
+            //console.log(hotel_markers[i][0]);
+            //$("#pop-desc").html("K");
+
+            // Popup position
+            // var popLeft = (d.x*scale)+trans[0]+20;//lE.cL[0] + 20;
+            // var popTop = (d.y*scale)+trans[1]+20;//lE.cL[1] + 70;
+            $("#pop-up").css({"left":20,"bottom":20});
+            $("#pop-up").fadeIn(100);
+            })
+          }
+        })(hotel_marker, i));
+
+        // Automatically center the map fitting all markers on the screen
+        //map.fitBounds(bounds);
+        price_info.setContent('Housing:$' + hotels[i].price);
+        price_info.open(map, hotel_marker);
+    }
+
+  });
+
+
+
+  // Sets a listener on a radio button to change the filter type on Places
+  // Autocomplete.
+  function setupClickListener(id, types) {
+    var radioButton = document.getElementById(id);
+    radioButton.addEventListener('click', function() {
+      autocomplete.setTypes(types);
+    });
+  }
+
+  setupClickListener('changetype-all', []);
+  setupClickListener('changetype-address', ['address']);
+  setupClickListener('changetype-establishment', ['establishment']);
+  setupClickListener('changetype-geocode', ['geocode']);
+}
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places&amp;callback=initMap"
+        async defer></script>
+  </body>
+</html>

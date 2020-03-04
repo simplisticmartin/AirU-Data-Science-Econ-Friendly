@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <title>AirU</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+  div#filter{
+    width:20%;
+    position:absolute;
+    right:0px;
+    top:0px;
+    background: rgba(0,0,0,0.5);
+    height:100%;
+  }
+
+  div#pop-up {
+    display: none;
+    position:absolute;
+    color: white;
+    font-size: 14px;
+    background: rgba(0,0,0,0.5);
+    padding: 5px 10px 5px 10px;
+    -moz-border-radius: 8px 8px;
+    border-radius: 8px 8px;
+    margin-top:100px;
+    width: 60%;
+  }
+  div#pop-up-title {
+    font-size: 12px;
+    width:200px;
+    margin-bottom: 4px;
+    font-weight: bolder;
+  }
+  div#pop-up-content {
+    font-size: 10px;
+  }
+  div#pop-desc {
+    width: 100px;
+  }
+  div#pop-img {
+    font-size: 10px;
+    font-weight: bolder;
+  }
+
+
+
+  #map {
+  width: 80%; 
+  min-height: 100%; 
+  background: #3e3e3e; 
+  position:relative
+}
+
+
+.controls {
+  margin-top: 10px;
+  border: 1px solid transparent;
+  border-radius: 2px 0 0 2px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  height: 32px;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#pac-input {
+  background-color: #fff;
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 300;
+  margin-left: 12px;
+  padding: 0 11px 0 13px;
+  text-overflow: ellipsis;
+  width: 300px;
+}
+
+#pac-input:focus {
+  border-color: #4d90fe;
+}
+
+.pac-container {
+  font-family: Roboto;
+}
+
+#type-selector {
+  color: #fff;
+  background-color: #4d90fe;
+  padding: 5px 11px 0px 11px;
+}
+
+#type-selector label {
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 300;
+
+}
+
+    </style>
+  </head>
+  <body>
+
+
+    <input id="pac-input" class="controls" type="text"
+        placeholder="Enter a location">
+    <div id="type-selector" class="controls">
+      <input type="radio" name="type" id="changetype-all" checked="checked">
+      <label for="changetype-all">All</label>
+
+      <input type="radio" name="type" id="changetype-establishment">
+      <label for="changetype-establishment">Establishments</label>
+
+      <input type="radio" name="type" id="changetype-address">
+      <label for="changetype-address">Addresses</label>
+
+      <input type="radio" name="type" id="changetype-geocode">
+      <label for="changetype-geocode">Geocodes</label>
+    </div>
+    <div id="map"></div>
+      <div id="pop-up">
+            <div id="pop-up-title"></div>
+            <div id="pop-up-content">
+                <table> <tr>
+                    <td><div id="pop-img"></div></td>
+                    <td><div id="pop-desc"></div></td>
+                </tr> </table>
+            </div>
+        </div>
+  </div>
+  <!--
+  <div id="filter">
+  <table style="width:100%">
+  <tr>
+    <td>
+      <select>
+      <option vlaue="Entire">Entire Home/Apartment</option>
+      <option vlaue="Private">Private Room</option>
+      <option vlaue="Share">Shared Room</option>
+      </select>
+    </td>
+
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="TV" value="1">TV</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="Kitchen" value="1">Kitchen</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="AC" value="1">Air Conditioning</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="WIFI" value="1">Wireless Internet</td>
+  </tr>
+  <tr>
+    <td><input type="checkbox" id="Heating" value="1">Heating</td>
+  </tr>
+  <tr>
+    <td>
+    <label for="price">Price</label>
+    <input type="range" min="0" max="1000" value="300" id="price" step="1" oninput="outputUpdate_price(value)">
+    <output for="price" id="price_vol">300</output>
+    </td>
+  </tr>
+  <tr>
+    <td>
+    <label for="time">Time</label>
+    <input type="range" min="0" max="30" value="10" id="time" step="1" oninput="outputUpdate_time(value)">
+    <output for="time" id="time_vol">10</output>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <button onclick="myFunction()">I like it!</button>
+    </td>
+  </tr>
+</table>
+  </div>
+-->
+<div id='cssmenu'>
+<ul>
+   <!--<li class='active'><a href='#'><span>Home</span></a>
+   </li>-->
+   <li class='has-sub'><a href='#'><span>Room Type</span></a>
+      <ul>
+         <li><a href='#'><input type="radio" name="Room" id="Entire" value="1" checked>Entire Home/Aparment</a></li>
+         <li><a href='#'><input type="radio" name="Room" id="Share" value="1" >Shared Room</a></li>
+         <li class='last'><a href='#'><input type="radio" name="Room" id="Private" value="1">Private Room</a></li>
+      </ul>
+   </li>
+   <li class='has-sub'><a href='#'><span>Features</span></a>
+      <ul>
+         <li><a href='#'><input type="checkbox" id="TV" value="1">TV</a></li>
+         <li><a href='#'><input type="checkbox" id="AC" value="1">Air Conditioning</a></li>
+         <li><a href='#'><input type="checkbox" id="WIFI" value="1">Wireless Internet</a></li>
+         <li><a href='#'><input type="checkbox" id="Heating" value="1">Heating</a></li>
+         <li class='last'><a href='#'><input type="checkbox" id="Kitchen" value="1">Kitchen</a></li>
+      </ul>
+   <li class='has-sub'><a href='#'><span>Time and Price</span></a>
+      <ul>        
+         <li><a href='#'><label for="price">Price</label>
+    <input type="range" min="0" max="1000" value="300" id="price" step="1" oninput="outputUpdate_price(value)">
+    <output for="price" id="price_vol">300</output></a></li>
+         <li class='last'><a href='#'><label for="time">Time</label>
+    <input type="range" min="0" max="30" value="10" id="time" step="1" oninput="outputUpdate_time(value)">
+    <output for="time" id="time_vol">10</output></a></li>
+      </ul>
+   </li>
+   <li class='last'><a href='#'><span onclick="myFunction()">Like It</span></a></li>
+   <li class='has-sub'><a href='#'><span>Recommander</span></a>
+      <ul>
+         <li><a href='#'><span>Company</span></a></li>
+         <li class='last'><a href='#'><span>Contact</span></a></li>
+         <li><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js1.js"></script></span></a></li>
+         <li><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js2.js"></script></span></a></li>
+         <li><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js3.js"></script></span></a></li>
+         <li><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js4.js"></script></span></a></li>
+          <li class='last'><a href='#'><span onclick="getMapLocation()"><script type="text/javascript" src="js5.js"></script></span></a></li>
+
+
+
+
+      </ul>
+   </li>
+   
+</ul>
+</div>
+
+    <script>
+
+function outputUpdate_time(vol) {
+  document.querySelector('#time_vol').value = vol;
+}
+function outputUpdate_price(vol) {
+  document.querySelector('#price_vol').value = vol;
+}
+// This example requires the Places library. Include the libraries=places
+// parameter when you first load the API. For example:
+// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+function initMap() {
+  var map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: -33.8688, lng: 151.2195},
+    zoom: 13
+  });
+  var input = /** @type {!HTMLInputElement} */(
+      document.getElementById('pac-input'));
+
+  var types = document.getElementById('type-selector');
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(types);
+
+  var autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo('bounds', map);
+
+  var infowindow = new google.maps.InfoWindow();
+  var marker = new google.maps.Marker({
+    map: map,
+    anchorPoint: new google.maps.Point(0, -29)
+  });
+
+  autocomplete.addListener('place_changed', function() {
+    infowindow.close();
+    marker.setVisible(false);
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      window.alert("Autocomplete's returned place contains no geometry");
+      return;
+    }
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      map.setCenter(place.geometry.location);
+      console.log(place.geometry.location.lat());
+      console.log(place.geometry.location.lng());
+      map.setZoom(17);  // Why 17? Because it looks good.
+    }
+    marker.setIcon(/** @type {google.maps.Icon} */({
+      url: place.icon,
+      size: new google.maps.Size(71, 71),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(17, 34),
+      scaledSize: new google.maps.Size(35, 35)
+    }));
+    marker.setPosition(place.geometry.location);
+    marker.setVisible(true);
+
+    var address = '';
+    if (place.address_components) {
+      address = [
+        (place.address_components[0] && place.address_components[0].short_name || ''),
+        (place.address_components[1] && place.address_components[1].short_name || ''),
+        (place.address_components[2] && place.address_components[2].short_name || '')
+      ].join(' ');
+    }
+
+    infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+    infowindow.open(map, marker);
+  });
+
+	// Add Markers
+    var hotel_markers = [
+        ['London Eye, London', 51.503454,-0.119562],
+        ['Palace of Westminster, London', 51.499633,-0.124755]
+    ];
+                        
+    // Info Window Content
+    var infoWindowContent = [
+        ['<div class="info_content">' +
+        '<h3>London Eye</h3>' +
+        '<p>The London Eye is a giant Ferris wheel situated on the banks of the River Thames. The entire structure is 135 metres (443 ft) tall and the wheel has a diameter of 120 metres (394 ft).</p>' +        '</div>'],
+        ['<div class="info_content">' +
+        '<h3>Palace of Westminster</h3>' +
+        '<p>The Palace of Westminster is the meeting place of the House of Commons and the House of Lords, the two houses of the Parliament of the United Kingdom. Commonly known as the Houses of Parliament after its tenants.</p>' +
+        '</div>']
+    ];
+    // Price data
+    var price = ['1','2']
+
+    // Display multiple markers on a map
+    var hotel_info = new google.maps.InfoWindow(), hotel_marker, i;
+    
+    // Loop through our array of markers & place each one on the map  
+    for( i = 0; i < hotel_markers.length; i++ ) {
+        var price_info = new google.maps.InfoWindow();
+        var position = new google.maps.LatLng(hotel_markers[i][1], hotel_markers[i][2]);
+        //bounds.extend(position);
+        hotel_marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: hotel_markers[i][0]
+        });
+        
+        // Allow each marker to have an info window    
+        google.maps.event.addListener(hotel_marker, 'click', (function(hotel_marker, i) {
+            return function() {
+                //hotel_info.setContent(infoWindowContent[i][0]);
+                //hotel_info.open(map, hotel_marker);
+            $("#pop-up").fadeOut(100,function () {
+            // Popup content
+            $("#pop-up-title").html(hotel_markers[i][0]);
+            $("#pop-img").html(infoWindowContent[i][0]);
+            //console.log(hotel_markers[i][0]);
+            //$("#pop-desc").html("K");
+
+            // Popup position
+            // var popLeft = (d.x*scale)+trans[0]+20;//lE.cL[0] + 20;
+            // var popTop = (d.y*scale)+trans[1]+20;//lE.cL[1] + 70;
+            $("#pop-up").css({"left":20,"bottom":20});
+            $("#pop-up").fadeIn(100);
+            })
+          }
+        })(hotel_marker, i));
+
+        // Automatically center the map fitting all markers on the screen
+        //map.fitBounds(bounds);
+        price_info.setContent(price[i][0]);
+        price_info.open(map, hotel_marker);
+    }
+
+  // Sets a listener on a radio button to change the filter type on Places
+  // Autocomplete.
+  function setupClickListener(id, types) {
+    var radioButton = document.getElementById(id);
+    radioButton.addEventListener('click', function() {
+      autocomplete.setTypes(types);
+    });
+  }
+
+  setupClickListener('changetype-all', []);
+  setupClickListener('changetype-address', ['address']);
+  setupClickListener('changetype-establishment', ['establishment']);
+  setupClickListener('changetype-geocode', ['geocode']);
+}
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places&callback=initMap"
+        async defer></script>
+
+  </body>
+</html>
